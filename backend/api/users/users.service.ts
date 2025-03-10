@@ -1,8 +1,9 @@
 import { dbService } from "../../services/db/db.service";
-import { ITodo } from "../../globalTypes";
+import {ITodo, IUser} from "../../globalTypes";
 
 async function getAllUsers() {
-  return await dbService.getCollection("users").findAll();
+  const users= await dbService.getCollection("users").findAll();
+  return users as IUser[];
 }
 
 async function getUserById(id: string) {

@@ -1,11 +1,24 @@
 import { Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
+import { getAllUsers } from "../api/users/users.service";
 
 export const validateTodoRules = [
   body("title").notEmpty().withMessage("Title is required"),
   body("category").notEmpty().withMessage("Category is required"),
-  body("userId").notEmpty().withMessage("User Id is required"),
-  //check if the user exists
+  body("isCompleted").notEmpty().withMessage("isCompleted is required"),
+  body("userId")
+    .notEmpty()
+    .withMessage("User Id is required")
+    .custom(async (userId) => {
+      if (
+        await getAllUsers().then((users) =>
+          users.some((user) => user.id === userId),
+        )
+      ) {
+        throw new Error("No such user");
+      }
+      return true;
+    }),
 ];
 
 export const validateUserRules = [
@@ -14,17 +27,30 @@ export const validateUserRules = [
     .notEmpty()
     .withMessage("Email is required")
     .isEmail()
-    .withMessage("Email must be a valid email address"),
-  body("isAdmin")
-    .notEmpty()
-    .withMessage("isAdmin is required")
-    .custom((value) => {
-      if (value !== true) {
-        throw new Error("isAdmin must be true");
+    .withMessage("Email must be a valid email address")
+    .custom(async (email) => {
+      if (
+        await getAllUsers().then((users) =>
+          users.some((user) => user.email === email),
+        )
+      ) {
+        throw new Error("Email already in use");
       }
       return true;
     }),
-  body("password").notEmpty().withMessage("Password is required"),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isStrongPassword()
+    .withMessage("Password must be a strong password"),
+  body("isAdmin").notEmpty().withMessage("isAdmin is required"),
+  //if isAdmin is true then get the right RBAC
+  // .custom((value) => {
+  //   if (value !== true) {
+  //     throw new Error("isAdmin must be true");
+  //   }
+  //   return true;
+  // })
 ];
 
 export async function validate(

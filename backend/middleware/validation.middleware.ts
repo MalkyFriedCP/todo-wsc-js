@@ -2,10 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
 import { getAllUsers } from "../api/users/users.service";
 
-export const validateTodoRules = [
+export const validateNewTodoRules = [
   body("title").notEmpty().withMessage("Title is required"),
   body("category").notEmpty().withMessage("Category is required"),
-  body("isCompleted").notEmpty().withMessage("isCompleted is required"),
   body("userId")
     .notEmpty()
     .withMessage("User Id is required")
@@ -21,7 +20,25 @@ export const validateTodoRules = [
     }),
 ];
 
-export const validateUserRules = [
+export const validateTodoRules = [
+  body("title").notEmpty().withMessage("Title is required"),
+  body("category").notEmpty().withMessage("Category is required"),
+  body("userId")
+    .notEmpty()
+    .withMessage("User Id is required")
+    .custom(async (userId) => {
+      if (
+        await getAllUsers().then((users) =>
+          users.some((user) => user.id === userId),
+        )
+      ) {
+        throw new Error("No such user");
+      }
+      return true;
+    }),
+];
+
+export const validateNewUserRules = [
   body("name").notEmpty().withMessage("Name is required"),
   body("email")
     .notEmpty()
@@ -43,14 +60,19 @@ export const validateUserRules = [
     .withMessage("Password is required")
     .isStrongPassword()
     .withMessage("Password must be a strong password"),
-  body("isAdmin").notEmpty().withMessage("isAdmin is required"),
-  //if isAdmin is true then get the right RBAC
-  // .custom((value) => {
-  //   if (value !== true) {
-  //     throw new Error("isAdmin must be true");
-  //   }
-  //   return true;
-  // })
+];
+
+export const validateUserRules = [
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Email must be a valid email address"),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isStrongPassword()
+    .withMessage("Password must be a strong password"),
 ];
 
 export async function validate(

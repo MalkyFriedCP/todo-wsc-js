@@ -4,11 +4,13 @@ import {
   deleteTodo,
   getAllTodos,
   getTodosById,
+  getTodosByUserId,
   updateTodo,
 } from "./todos.service";
 
 async function getAll(req: Request, res: Response) {
   try {
+    const user = req.body;
     const todos = await getAllTodos();
     res.send(todos);
   } catch (err) {
@@ -21,6 +23,17 @@ async function getById(req: Request, res: Response) {
     const { id } = req.params;
     const todo = await getTodosById(id);
     res.send(todo);
+  } catch (err) {
+    res.status(404).send({ err: (err as Error).message });
+  }
+}
+
+async function getByUserId(req: Request, res: Response) {
+  try {
+    const userId = req.body.id;
+    const todos = await getTodosByUserId(userId);
+    console.log(todos);
+    res.send(todos);
   } catch (err) {
     res.status(404).send({ err: (err as Error).message });
   }
@@ -58,4 +71,4 @@ async function remove(req: Request, res: Response) {
   }
 }
 
-export { getAll, getById, create, update, remove };
+export { getAll, getById, getByUserId, create, update, remove };

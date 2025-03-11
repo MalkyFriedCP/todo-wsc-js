@@ -1,8 +1,9 @@
 import { dbService } from "../../services/db/db.service";
-import {ITodo, IUser} from "../../globalTypes";
+import { ITodo, IUser } from "../../globalTypes";
+import bcrypt from "bcryptjs";
 
 async function getAllUsers() {
-  const users= await dbService.getCollection("users").findAll();
+  const users = await dbService.getCollection("users").findAll();
   return users as IUser[];
 }
 
@@ -14,14 +15,18 @@ async function getUserById(id: string) {
   }
 }
 
-async function createUser(data: ITodo) {
+async function createUser(data: IUser) {
   try {
+    //worry about this later
+    data.isAdmin = false;
+    //encrypt the password before storing it in the database
+    data.password = await bcrypt.hash(data.password, 10);
     return await dbService.getCollection("users").create(data);
   } catch (err) {
     throw new Error("Failed to create user");
   }
 }
-async function updateUser(id: string, data: ITodo) {
+async function updateUser(id: string, data: IUser) {
   try {
     return await dbService.getCollection("users").update(id, data);
   } catch (err) {

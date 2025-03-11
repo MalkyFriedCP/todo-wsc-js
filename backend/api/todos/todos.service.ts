@@ -13,8 +13,19 @@ async function getTodosById(id: string) {
   }
 }
 
+async function getTodosByUserId(userId: string) {
+  try {
+    const allTodos = await dbService.getCollection("todos").findAll();
+    const newt = allTodos as ITodo[];
+    return newt.filter((todo: ITodo) => todo.userId === userId);
+  } catch (err) {
+    throw new Error("Failed to get todos for this user");
+  }
+}
+
 async function createTodo(data: ITodo) {
   try {
+    data.isCompleted = false;
     return await dbService.getCollection("todos").create(data);
   } catch (err) {
     throw new Error("Failed to create todo");
@@ -35,4 +46,11 @@ async function deleteTodo(id: string) {
   }
 }
 
-export { getAllTodos, getTodosById, createTodo, updateTodo, deleteTodo };
+export {
+  getAllTodos,
+  getTodosById,
+  getTodosByUserId,
+  createTodo,
+  updateTodo,
+  deleteTodo,
+};

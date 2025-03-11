@@ -5,6 +5,7 @@ import { config } from "./config";
 import { exampleRouter } from "./api/example/example.routes";
 import { todoRouter } from "./api/todos/todos.routes";
 import { userRouter } from "./api/users/users.routes";
+import { authRouter } from "./api/auth/auth.routes";
 
 const path = config.isProduction() ? ".env.prod" : ".env.dev";
 
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use("/example", exampleRouter);
 app.use("/todos", todoRouter);
 app.use("/users", userRouter);
+app.use("/auth", authRouter);
 
 app.get("/", (request: Request, response: Response) => {
   response.status(200).send(`localhost:${PORT}/example`);
@@ -34,6 +36,9 @@ app.get("/", (request: Request, response: Response) => {
 });
 app.get("/", (request: Request, response: Response) => {
   response.status(200).send(`localhost:${PORT}/users`);
+});
+app.get("/", (request: Request, response: Response) => {
+  response.status(200).send(`localhost:${PORT}/auth`);
 });
 
 app

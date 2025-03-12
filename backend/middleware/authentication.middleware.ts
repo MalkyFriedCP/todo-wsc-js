@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { getAllUsers } from "../api/users/users.service";
-import jwt from "jsonwebtoken";
+import { generateToken, verifyToken } from "../services/jwt/jwt.service";
+import { JwtPayload } from "jsonwebtoken";
 
 async function comparePassword(password: string, hashedPassword: string) {
   return bcrypt.compare(password, hashedPassword);
@@ -31,12 +32,12 @@ export const authenticate = async (
 
   const secretKey = process.env.JWT_SECRET_KEY;
   if (!secretKey) {
-    return res
-      .status(500)
-      .json({ message: "Server error: JWT secret key not defined" });
+    return res.status(500).json({
+      message: "Server error: JWT secret key not defined",
+    });
   }
   const payload = { email: user.email, id: user.id };
-  req.body.token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+  req.body.token = generateToken(payload, secretKey, { expiresIn: "1h" });
   next();
 };
 
@@ -50,18 +51,23 @@ export const verify = async (
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
   }
+
   const secretKey = process.env.JWT_SECRET_KEY;
   if (!secretKey) {
-    return res
-      .status(500)
-      .json({ message: "Server error: JWT secret key not defined" });
+    return res.status(500).json({
+      message: "Server error: JWT secret key not defined",
+    });
   }
+
   try {
-    // Verify the token
-    const decoded = jwt.verify(token, secretKey) as {
-      email: string;
-      id: string;
-    };
+    // Verify the token and decode it directly
+    const decoded = verifyToken(token, secretKey);
+
+    // Type guard to check if decoded is a valid JwtPayload
+    if (typeof decoded !== "object" || !decoded.email || !decoded.id) {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
+
     // Find the user from the database using the decoded information
     const user = await getAllUsers().then((users) =>
       users.find((user) => user.email === decoded.email),
@@ -69,9 +75,10 @@ export const verify = async (
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
+
     // Attach user info to req for use in subsequent middlewares or routes
-    req.query.id = user.id;
-    next(); // Pass control to the next middleware/route
+    req.body.user = user; // This keeps it consistent with your auth flow
+    next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }

@@ -2,40 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
 import { getAllUsers } from "../api/users/users.service";
 
-export const validateNewTodoRules = [
-  body("title").notEmpty().withMessage("Title is required"),
-  body("category").notEmpty().withMessage("Category is required"),
-  body("userId")
-    .notEmpty()
-    .withMessage("User Id is required")
-    .custom(async (userId) => {
-      if (
-        await getAllUsers().then((users) =>
-          users.some((user) => user.id === userId),
-        )
-      ) {
-        throw new Error("No such user");
-      }
-      return true;
-    }),
-];
-
 export const validateTodoRules = [
   body("title").notEmpty().withMessage("Title is required"),
   body("category").notEmpty().withMessage("Category is required"),
-  body("userId")
-    .notEmpty()
-    .withMessage("User Id is required")
-    .custom(async (userId) => {
-      if (
-        await getAllUsers().then((users) =>
-          users.some((user) => user.id === userId),
-        )
-      ) {
-        throw new Error("No such user");
-      }
-      return true;
-    }),
 ];
 
 export const validateNewUserRules = [

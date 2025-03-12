@@ -50,46 +50,29 @@ export const verify = async (
   if (!token) {
     return res.status(401).json({ message: "No token provided" });
   }
-
   const secretKey = process.env.JWT_SECRET_KEY;
   if (!secretKey) {
     return res
       .status(500)
       .json({ message: "Server error: JWT secret key not defined" });
   }
-
   try {
     // Verify the token
     const decoded = jwt.verify(token, secretKey) as {
       email: string;
       id: string;
     };
-
     // Find the user from the database using the decoded information
     const user = await getAllUsers().then((users) =>
       users.find((user) => user.email === decoded.email),
     );
-
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-
     // Attach user info to req for use in subsequent middlewares or routes
-    req.body = user;
+    req.query.id = user.id;
     next(); // Pass control to the next middleware/route
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
-};
-
-export const authorize = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const user = req.body;
-  if (!user.isAdmin) {
-    return res.status(403).json({ message: "Unauthorized" });
-  }
-  next();
 };

@@ -33,6 +33,11 @@ async function createTodo(data: ITodo) {
 }
 async function updateTodo(id: string, data: ITodo) {
   try {
+    const todo = await getTodosById(id);
+    const newTodo = todo as ITodo;
+    if (newTodo.userId !== data.userId) {
+      throw new Error("You are not authorized to update this todo");
+    }
     return await dbService.getCollection("todos").update(id, data);
   } catch (err) {
     throw new Error("Failed to update todo");

@@ -30,9 +30,8 @@ async function getById(req: Request, res: Response) {
 
 async function getByUserId(req: Request, res: Response) {
   try {
-    const userId = req.body.id;
-    const todos = await getTodosByUserId(userId);
-    console.log(todos);
+    const userId = req.query.id;
+    const todos = await getTodosByUserId(userId as string);
     res.send(todos);
   } catch (err) {
     res.status(404).send({ err: (err as Error).message });
@@ -42,8 +41,8 @@ async function getByUserId(req: Request, res: Response) {
 async function create(req: Request, res: Response) {
   try {
     const data = req.body;
+    data.userId = req.query.id;
     const todo = await createTodo(data);
-    console.log(todo);
     res.send(todo);
   } catch (err) {
     res.status(404).send({ err: "Failed to create todo" });
@@ -54,6 +53,7 @@ async function update(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const data = req.body;
+    data.userId = req.query.id;
     const todo = await updateTodo(id, data);
     res.send(todo);
   } catch (err) {

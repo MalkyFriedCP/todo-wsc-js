@@ -16,16 +16,17 @@ export const authenticate = async (
   const { email, password } = req.body;
 
   // Find the user by email
-  const user = await getAllUsers().then((users) =>
-    users.find((user) => user.email === email),
-  );
+  const users = (await getAllUsers()) as { data: JwtPayload[] };
 
-  if (!user) {
+  const foundUser = users.data.find(
+    (user) => user.email === email,
+  ) as JwtPayload;
+  if (!foundUser) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
 
   // Check if the password is correct
-  const isPasswordValid = await comparePassword(password, user.password);
+  const isPasswordValid = await comparePassword(password, foundUser.password);
   if (!isPasswordValid) {
     return res.status(401).json({ message: "Invalid credentials" });
   }
@@ -36,7 +37,7 @@ export const authenticate = async (
       message: "Server error: JWT secret key not defined",
     });
   }
-  const payload = { email: user.email, id: user.id };
+  const payload = { email: foundUser.email, id: foundUser.id };
   req.body.token = generateToken(payload, secretKey, { expiresIn: "1h" });
   next();
 };
@@ -67,17 +68,15 @@ export const verify = async (
     if (typeof decoded !== "object" || !decoded.email || !decoded.id) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
-
     // Find the user from the database using the decoded information
-    const user = await getAllUsers().then((users) =>
-      users.find((user) => user.email === decoded.email),
-    );
+    const users = (await getAllUsers()) as { data: JwtPayload[] };
+    const user = users.data.find((user) => user.email === decoded.email);
+
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
-
     // Attach user info to req for use in subsequent middlewares or routes
-    req.body.user = user; // This keeps it consistent with your auth flow
+    req.body.user = user;
     next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired token" });

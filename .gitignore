@@ -4,8 +4,4 @@ backend/.idea
 backend/.env.dev
 backend/.env.prod
 backend/db
-frontend/node_modules
-frontend/dist
-frontend/.idea
-frontend/.env.dev
-frontend/.env.prod
+backend/logs/*

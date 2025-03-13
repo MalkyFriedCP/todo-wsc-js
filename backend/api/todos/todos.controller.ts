@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
   createTodo,
   deleteTodo,
@@ -8,66 +8,65 @@ import {
   updateTodo,
 } from "./todos.service";
 
-async function getAll(req: Request, res: Response) {
+async function getAll(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = req.body;
     const todos = await getAllTodos();
-    res.send(todos);
-  } catch (err) {
-    res.status(404).send({ err: "Failed to get todos" });
+    res.status(200).send(todos);
+  } catch (err: any) {
+    next(err);
   }
 }
 
-async function getById(req: Request, res: Response) {
+async function getById(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const todo = await getTodosById(id);
-    res.send(todo);
-  } catch (err) {
-    res.status(404).send({ err: (err as Error).message });
+    res.status(200).send(todo);
+  } catch (err: any) {
+    next(err);
   }
 }
 
-async function getByUserId(req: Request, res: Response) {
+async function getByUserId(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.query.id;
     const todos = await getTodosByUserId(userId as string);
-    res.send(todos);
-  } catch (err) {
-    res.status(404).send({ err: (err as Error).message });
+    res.status(200).send(todos);
+  } catch (err: any) {
+    next(err);
   }
 }
 
-async function create(req: Request, res: Response) {
+async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const data = req.body;
     data.userId = req.query.id;
     const todo = await createTodo(data);
-    res.send(todo);
-  } catch (err) {
-    res.status(404).send({ err: "Failed to create todo" });
+    res.status(201).send(todo);
+  } catch (err: any) {
+    next(err);
   }
 }
 
-async function update(req: Request, res: Response) {
+async function update(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const data = req.body;
     data.userId = req.query.id;
     const todo = await updateTodo(id, data);
-    res.send(todo);
-  } catch (err) {
-    res.status(404).send({ err: "Failed to update todo" });
+    res.status(200).send(todo);
+  } catch (err: any) {
+    next(err);
   }
 }
 
-async function remove(req: Request, res: Response) {
+async function remove(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     const todo = await deleteTodo(id);
-    res.send(todo);
-  } catch (err) {
-    res.status(404).send({ err: "Failed to delete todo" });
+    res.status(200).send(todo);
+  } catch (err: any) {
+    next(err);
   }
 }
 

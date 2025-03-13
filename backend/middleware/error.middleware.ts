@@ -9,12 +9,15 @@ export const errorHandler = (
 ) => {
   const statusCode = err.status || 500;
   const message = err.message || "Something went wrong!";
-  // Log error for debugging
+  const details = err.details || null;
+
   logger.error(
-    `${statusCode} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`,
+    `${statusCode} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip} - ${details}`,
   );
+
   return res.status(statusCode).json({
     success: false,
     message,
+    details,
   });
 };

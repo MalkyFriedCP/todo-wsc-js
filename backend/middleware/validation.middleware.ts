@@ -15,11 +15,8 @@ export const validateNewUserRules = [
     .isEmail()
     .withMessage("Email must be a valid email address")
     .custom(async (email) => {
-      if (
-        await getAllUsers().then((users) =>
-          users.some((user) => user.email === email),
-        )
-      ) {
+      const users = (await getAllUsers()) as { success: true; data: any }; // Get all users
+      if (users.data.some((user: { email: any }) => user.email === email)) {
         throw new Error("Email already in use");
       }
       return true;
@@ -31,7 +28,18 @@ export const validateNewUserRules = [
     .withMessage("Password must be a strong password"),
 ];
 
-export const validateUserRules = [
+export const validateExistingUserRules = [
+  body("name")
+    .optional()
+    .isEmail()
+    .withMessage("Email must be a valid email address"),
+  body("password")
+    .optional()
+    .isStrongPassword()
+    .withMessage("Password must be a strong password"),
+];
+
+export const validateLoginUserRules = [
   body("email")
     .notEmpty()
     .withMessage("Email is required")

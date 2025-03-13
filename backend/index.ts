@@ -5,6 +5,8 @@ import { config } from "./config";
 import { todoRouter } from "./api/todos/todos.routes";
 import { userRouter } from "./api/users/users.routes";
 import { authRouter } from "./api/auth/auth.routes";
+import { errorHandler } from "./middleware/error.middleware";
+import { logRequest } from "./middleware/logger.middleware";
 
 const path = config.isProduction() ? ".env.prod" : ".env.dev";
 
@@ -19,6 +21,8 @@ const corsOptions = {
   origin: corsOrigins,
   credentials: true,
 };
+
+app.use(logRequest);
 
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -35,6 +39,8 @@ app.get("/", (request: Request, response: Response) => {
 app.get("/", (request: Request, response: Response) => {
   response.status(200).send(`localhost:${PORT}/auth`);
 });
+
+app.use(errorHandler);
 
 app
   .listen(PORT, () => {
